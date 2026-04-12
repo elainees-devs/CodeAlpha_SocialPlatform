@@ -11,7 +11,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authenticate = async (
+export const authenticateMiddleware = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
