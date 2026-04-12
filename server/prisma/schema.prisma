@@ -83,6 +83,7 @@ model Like {
   id      Int  @id @default(autoincrement())
   user_id Int?
   post_id Int?
+  created_at DateTime @default(now())
 
   user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
   post Post? @relation(fields: [post_id], references: [id], onDelete: Cascade)
@@ -101,6 +102,7 @@ model Follow {
   id           Int @id @default(autoincrement())
   follower_id  Int
   following_id Int
+  created_at   DateTime @default(now())
 
   follower  User @relation("followers", fields: [follower_id], references: [id], onDelete: Cascade)
   following User @relation("following", fields: [following_id], references: [id], onDelete: Cascade)
