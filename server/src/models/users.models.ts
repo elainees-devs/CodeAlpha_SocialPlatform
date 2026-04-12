@@ -1,11 +1,6 @@
-import { User, PrismaClient} from "@prisma/client";
-import {
-  IUser,
-  RegisterUserInput,
-  UserProfileResponse,
-} from "../types";
-
-export const prisma = new PrismaClient();
+import { User } from "@prisma/client";
+import { IUser, RegisterUserInput, UserProfileResponse } from "../types";
+import { prisma } from "../utils";
 
 /**
  * User Model (Prisma + Mapper Pattern)
@@ -114,7 +109,7 @@ class UserModel {
   // ======================
   async updateProfile(
     id: number,
-    data: Partial<Omit<IUser, "id" | "created_at">>
+    data: Partial<Omit<IUser, "id" | "created_at">>,
   ): Promise<UserProfileResponse | null> {
     const updated = await prisma.user.update({
       where: { id },
