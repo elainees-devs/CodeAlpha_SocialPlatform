@@ -5,6 +5,7 @@ CREATE TABLE users (
   password_hash TEXT NOT NULL,
   bio TEXT,
   avatar_url TEXT,
+  is_online BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
