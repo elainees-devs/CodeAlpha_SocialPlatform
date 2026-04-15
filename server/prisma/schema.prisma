@@ -4,13 +4,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-/**
- * =========================
- * USER
- * =========================
- */
 model User {
   id            Int      @id @default(autoincrement())
   username      String
@@ -33,11 +29,6 @@ model User {
   @@map("users")
 }
 
-/**
- * =========================
- * POSTS
- * =========================
- */
 model Post {
   id         Int      @id @default(autoincrement())
   user_id    Int?
@@ -54,11 +45,6 @@ model Post {
   @@map("posts")
 }
 
-/**
- * =========================
- * COMMENTS
- * =========================
- */
 model Comment {
   id         Int      @id @default(autoincrement())
   user_id    Int?
@@ -74,11 +60,6 @@ model Comment {
   @@map("comments")
 }
 
-/**
- * =========================
- * LIKES
- * =========================
- */
 model Like {
   id      Int  @id @default(autoincrement())
   user_id Int?
@@ -93,11 +74,6 @@ model Like {
   @@map("likes")
 }
 
-/**
- * =========================
- * FOLLOWS
- * =========================
- */
 model Follow {
   id           Int @id @default(autoincrement())
   follower_id  Int
