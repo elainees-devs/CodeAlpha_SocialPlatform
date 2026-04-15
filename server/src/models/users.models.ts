@@ -1,36 +1,47 @@
-import { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { IUser, RegisterUserInput, UserProfileResponse } from "../types";
 import { prisma } from "../utils";
 
 /**
- * User Model (Prisma + Mapper Pattern)
+ * Safe Prisma type for User model
  */
+type UserEntity = {
+  id: number;
+  username: string;
+  email: string;
+  password_hash: string;
+  bio: string | null;
+  avatar_url: string | null;
+  is_online: boolean;
+  created_at: Date;
+};
+
 class UserModel {
   // ======================
-  // Mapper (Prisma → Interface)
+  // Mapper (Prisma → Internal Type)
   // ======================
-  private mapUser(prismaUser: User): IUser {
+  private mapUser(userEntity: UserEntity): IUser {
     return {
-      id: prismaUser.id,
-      username: prismaUser.username,
-      email: prismaUser.email,
-      password_hash: prismaUser.password_hash,
-      bio: prismaUser.bio ?? null,
-      avatar_url: prismaUser.avatar_url ?? null,
-      is_online: prismaUser.is_online,
-      created_at: prismaUser.created_at.toISOString(),
+      id: userEntity.id,
+      username: userEntity.username,
+      email: userEntity.email,
+      password_hash: userEntity.password_hash,
+      bio: userEntity.bio ?? null,
+      avatar_url: userEntity.avatar_url ?? null,
+      is_online: userEntity.is_online,
+      created_at: userEntity.created_at.toISOString(),
     };
   }
 
-  private mapUserProfile(prismaUser: User): UserProfileResponse {
+  private mapUserProfile(userEntity: UserEntity): UserProfileResponse {
     return {
-      id: prismaUser.id,
-      username: prismaUser.username,
-      email: prismaUser.email,
-      bio: prismaUser.bio ?? null,
-      avatar_url: prismaUser.avatar_url ?? null,
-      is_online: prismaUser.is_online,
-      created_at: prismaUser.created_at.toISOString(),
+      id: userEntity.id,
+      username: userEntity.username,
+      email: userEntity.email,
+      bio: userEntity.bio ?? null,
+      avatar_url: userEntity.avatar_url ?? null,
+      is_online: userEntity.is_online,
+      created_at: userEntity.created_at.toISOString(),
     };
   }
 
@@ -97,7 +108,7 @@ class UserModel {
   // Get All Users
   // ======================
   async findAll(): Promise<UserProfileResponse[]> {
-    const users = await prisma.user.findMany({
+    const users: UserEntity[] = await prisma.user.findMany({
       orderBy: { created_at: "desc" },
     });
 
@@ -123,11 +134,11 @@ class UserModel {
   // Delete User
   // ======================
   async delete(id: number): Promise<boolean> {
-    const deleted = await prisma.user.delete({
+    await prisma.user.delete({
       where: { id },
     });
 
-    return !!deleted;
+    return true;
   }
 
   // ======================
