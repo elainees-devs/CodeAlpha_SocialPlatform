@@ -1,5 +1,5 @@
-export * from './users.models';
-export * from './posts.models';
-export * from './comments.models';
-export * from './likes.models';
-export * from './follows.models';
+export { userModel } from './users.models';
+export { postModel } from './posts.models';
+export {commentModel} from './comments.models';
+export { likeModel } from './likes.models';
+export { followModel } from './follows.models';
