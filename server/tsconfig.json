@@ -14,6 +14,7 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "types": ["jest"],
 
     /* =========================
        MODULE RESOLUTION
@@ -26,10 +27,8 @@
     /* =========================
        PRISMA COMPATIBILITY
     ========================= */
-    "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "skipLibCheck": true,
-
-
 
     /* =========================
        DEBUGGING & OUTPUT
@@ -42,7 +41,6 @@
     ========================= */
     "forceConsistentCasingInFileNames": true
   },
-
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
