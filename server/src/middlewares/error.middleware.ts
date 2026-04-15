@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 export const errorHandler = (
   err: any,
@@ -9,18 +9,35 @@ export const errorHandler = (
   const statusCode = err.statusCode || 500;
   const timestamp = new Date().toISOString();
 
-  // Log with timestamp and request details for better Linux log scanning
-  console.error(`[${timestamp}] [ERROR] ${req.method} ${req.path}: ${err.message}`);
+  const isTest = process.env.NODE_ENV === "test";
 
-  // Optional: Add stack trace in dev for deep debugging
-  if (process.env.NODE_ENV === 'development' && statusCode === 500) {
-    console.error(err.stack);
+  // ======================
+  // LOGGING STRATEGY
+  // ======================
+
+  // No logs during tests (clean Jest output)
+  if (!isTest) {
+    if (statusCode >= 500) {
+      console.error(
+        `[${timestamp}] [ERROR] ${req.method} ${req.path}: ${err.message}`
+      );
+    } else {
+      console.warn(
+        `[${timestamp}] [WARN] ${req.method} ${req.path}: ${err.message}`
+      );
+    }
+
+    if (process.env.NODE_ENV === "development" && statusCode === 500) {
+      console.error(err.stack);
+    }
   }
 
+  // ======================
+  // RESPONSE
+  // ======================
   res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error',
-    // Hide details from the client in production
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 };
