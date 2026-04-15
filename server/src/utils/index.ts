@@ -1,1 +1,2 @@
-export { prisma } from "./prisma";
+export { ApiError } from "./app-error";
+export {prisma} from "./prisma";
