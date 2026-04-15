@@ -1,17 +1,40 @@
-import express from 'express';
-import cors from 'cors';
-import { errorHandler } from './middlewares/error.middleware';
+import express from "express";
+import {
+  authRoutes,
+  userRoutes,
+  postRoutes,
+  commentRoutes,
+  likeRoutes,
+  followRoutes,
+} from "./routes";
+
+import { errorHandler } from "./middlewares/error.middleware";
 
 const app = express();
 
-// Middleware
-app.use(cors());
 app.use(express.json());
-app.use(errorHandler); // Global error handler
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+/**
+ * Routes
+ */
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/likes", likeRoutes);
+app.use("/api/follows", followRoutes);
+
+/**
+ * Health check
+ */
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "OK" });
 });
+
+/**
+ * Global error handler (MUST be the last middleware
+ */
+app.use(errorHandler);
 
 export default app;
