@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
+import { ApiError } from "../utils";
 
 export const validate =
   <T>(schema: ZodSchema<T>) =>
@@ -7,10 +8,9 @@ export const validate =
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
-      return res.status(400).json({
-        message: "Validation failed",
-        errors: result.error.flatten(),
-      });
+      const errors = result.error.flatten();
+
+      throw new ApiError(400, "Validation failed");
     }
 
     req.body = result.data;
