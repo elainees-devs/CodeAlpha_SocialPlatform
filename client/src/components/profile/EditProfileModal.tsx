@@ -8,7 +8,7 @@ type Props = {
   user: {
     username: string;
     bio?: string;
-    avatar_url?: string;
+    image_url?: string;
   };
   onClose: () => void;
 };
@@ -22,7 +22,7 @@ export default function EditProfileModal({ user, onClose }: Props) {
   });
 
   const [avatar, setAvatar] = useState<File | null>(null);
-  const [preview, setPreview] = useState(user.avatar_url || "");
+  const [preview, setPreview] = useState(user.image_url || "");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -88,7 +88,7 @@ export default function EditProfileModal({ user, onClose }: Props) {
         {/* Avatar preview */}
         <div className="flex flex-col items-center gap-2">
           <img
-            src={preview || "https://i.pravatar.cc/150"}
+            src={preview}
             className="w-20 h-20 rounded-full border object-cover"
           />
 
