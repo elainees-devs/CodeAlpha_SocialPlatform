@@ -1,7 +1,9 @@
+// src/routes/users.route.ts
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { userController } from "../controllers";
 import { authenticateMiddleware } from "../middlewares/auth.middleware";
+import { upload } from "../middlewares/upload.middleware";
 
 const router = Router();
 
@@ -10,7 +12,7 @@ const router = Router();
  */
 router.get(
   "/",
-  asyncHandler(userController.getAllUsers)
+  asyncHandler(userController.findAllUsers)
 );
 
 /**
@@ -37,6 +39,7 @@ router.patch(
 router.patch(
   "/profile",
   authenticateMiddleware,
+  upload.single("avatar"),
   asyncHandler(userController.updateProfile)
 );
 
@@ -45,7 +48,7 @@ router.patch(
  */
 router.get(
   "/:id",
-  asyncHandler(userController.getUserById)
+  asyncHandler(userController.findUserById)
 );
 
 /**
