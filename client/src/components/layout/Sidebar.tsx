@@ -1,46 +1,54 @@
-import {
-  Bell,
-  Bookmark,
-  Compass,
-  Home,
-  Mail,
-  Settings,
-  User as UserIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+// src/components/layout/Sidebar.tsx
+import { Home, User, Bell, Settings, LogOut } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
-const items = [
-  { label: "Home", icon: Home, active: true },
-  { label: "Explore", icon: Compass },
-  { label: "Notifications", icon: Bell },
-  { label: "Messages", icon: Mail },
-  { label: "Bookmarks", icon: Bookmark },
-  { label: "Profile", icon: UserIcon },
-  { label: "Settings", icon: Settings },
+const menu = [
+  { name: "Home", icon: Home, path: "/" },
+  { name: "Profile", icon: User, path: "/profile" },
+  { name: "Notifications", icon: Bell, path: "/notifications" },
+  { name: "Settings", icon: Settings, path: "/settings" },
 ];
 
-export function Sidebar() {
+export default function Sidebar() {
   return (
-    <aside className="hidden md:block sticky top-20 self-start">
-      <nav className="flex flex-col gap-1">
-        {items.map((it) => (
-          <Button
-            key={it.label}
-            variant="ghost"
-            className={cn(
-              "justify-start gap-4 rounded-full px-4 h-12 text-base font-medium",
-              it.active && "bg-muted text-foreground",
-            )}
-          >
-            <it.icon className="h-5 w-5" />
-            <span>{it.label}</span>
-          </Button>
-        ))}
-        <Button className="mt-4 h-12 rounded-full bg-gradient-primary text-primary-foreground font-semibold shadow-soft hover:shadow-hover hover:opacity-95 transition">
-          Post
-        </Button>
+    <div className="h-screen w-64 border-r bg-white p-4 flex flex-col">
+      
+      {/* Logo */}
+      <div className="text-2xl font-bold mb-8">
+        SocialApp
+      </div>
+
+      {/* Menu */}
+      <nav className="flex flex-col gap-2">
+        {menu.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
+                  isActive
+                    ? "bg-blue-500 text-white"
+                    : "hover:bg-gray-100"
+                }`
+              }
+            >
+              <Icon size={20} />
+              {item.name}
+            </NavLink>
+          );
+        })}
       </nav>
-    </aside>
+
+      {/* Bottom section */}
+      <div className="mt-auto pt-4 border-t">
+        <button className="flex items-center gap-2 w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600">
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+    </div>
   );
 }
