@@ -1,22 +1,42 @@
-import { HomeScreen } from "@/components/layout/HomeScreen";
-import { createFileRoute } from "@tanstack/react-router";
+// src/routes/index.tsx
+import { createBrowserRouter } from "react-router-dom";
+import { Home, Login, Register } from "../pages";
+import Feed from "../pages/Feed";
+import AuthGate from "../components/auth/AuthGate";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "../components/layout/AppLayout";
 
-
-export const Route = createFileRoute()({
-  component: HomeScreen,
-  head: () => ({
-    meta: [
-      { title: "Pulse — Modern social feed" },
+export const router = createBrowserRouter([
+  {
+    element: <AuthGate />,
+    children: [
       {
-        name: "description",
-        content:
-          "Pulse is a modern social feed: share posts, follow trends, and connect — a clean blend of Twitter, Instagram, and Threads.",
+        path: "/",
+        element: <Home />,
       },
-      { property: "og:title", content: "Pulse — Modern social feed" },
       {
-        property: "og:description",
-        content: "Share posts, follow trends, and connect on Pulse.",
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+
+      //Protected layout section
+      {
+        element: (
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "/feed",
+            element: <Feed />,
+          },
+        ],
       },
     ],
-  }),
-});
+  },
+]);
