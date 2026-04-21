@@ -1,6 +1,12 @@
 // src/components/layout/Sidebar.tsx
-import { Home, User, Bell, Settings, LogOut } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import {
+  Home,
+  User,
+  Bell,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const menu = [
   { name: "Home", icon: Home, path: "/" },
@@ -10,10 +16,19 @@ const menu = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="h-screen w-64 border-r bg-white p-4 flex flex-col">
 
-      {/* Menu */}
+      {/* MENU */}
       <nav className="flex flex-col gap-2">
         {menu.map((item) => {
           const Icon = item.icon;
@@ -37,13 +52,20 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom section */}
-      <div className="mt-auto pt-4 border-t">
-        <button className="flex items-center gap-2 w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600">
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* LOGOUT */}
+      <div className="pt-4 border-t">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600"
+        >
           <LogOut size={18} />
           Logout
         </button>
       </div>
+
     </div>
   );
 }
