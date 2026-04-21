@@ -1,26 +1,11 @@
-import { cn } from "@/lib/utils";
+// src/components/shared/Loader.tsx
 
 interface LoaderProps {
-  text?: string;
-  fullScreen?: boolean;
+  className?: string;
+  size?: "sm" | "md" | "lg";
 }
 
-export default function Loader({
-  text = "Loading...",
-  fullScreen = true,
-}: LoaderProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-3",
-        fullScreen && "h-screen w-full"
-      )}
-    >
-      {/* Spinner */}
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
-
-      {/* Text */}
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
-}
+export const Loader = ({ className = "", size = "sm" }: LoaderProps) => {
+  // We combine your base .loader class with any extra classes passed in
+  return <div className={`loader ${className} loader-${size}`}></div>;
+};
