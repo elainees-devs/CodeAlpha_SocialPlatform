@@ -1,23 +1,37 @@
+// src/components/auth/LoginForm.tsx
 import { useState } from "react";
-import { LoginData } from "../../types/auth.types";
-
+import { useNavigate } from "react-router-dom";
+import { LoginInput } from "../../types/auth.types";
+import { authService } from "../../services/auth.service";
+import { Loader } from "../shared/Loader";
+import { BackendErrorResponse } from "../../types/error.types";
+import { AxiosError } from "axios";
+import { useAuthStore } from "../../store/auth.store";
 
 export default function LoginForm() {
-  const [form, setForm] = useState<LoginData>({
+  const navigate = useNavigate();
+
+  // zustand auth store
+  const loginStore = useAuthStore((state) => state.login);
+
+  const [form, setForm] = useState<LoginInput>({
     email: "",
     password: "",
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) setError("");
+
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -26,46 +40,86 @@ export default function LoginForm() {
       return;
     }
 
-    console.log("Login data:", form);
-    // later: call login API
+    setLoading(true);
+
+    try {
+      const response = await authService.login(form);
+
+      console.log("Login successful:", response);
+
+      // 🔥 SAVE AUTH STATE (IMPORTANT)
+      loginStore(response.data.user, response.token);
+
+      // 🔥 Redirect to Feed page
+      navigate("/feed");
+
+    } catch (err) {
+      const error = err as AxiosError<BackendErrorResponse>;
+
+      const message =
+        error.response?.data?.message || "Invalid credentials";
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="relative">
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm">
-          {error}
-        </div>
-      )}
+      {/* Loader overlay */}
+      {loading && <Loader />}
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-        className="w-full border border-gray-200 rounded-md px-3 py-2
-                   focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
-
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-        className="w-full border border-gray-200 rounded-md px-3 py-2
-                   focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
-
-      <button
-        type="submit"
-        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-md transition"
+      <form
+        onSubmit={handleSubmit}
+        className={`space-y-4 transition-opacity ${
+          loading ? "opacity-50 pointer-events-none" : "opacity-100"
+        }`}
       >
-        Login
-      </button>
 
-    </form>
+        {/* ERROR MESSAGE */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* EMAIL */}
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+          value={form.email}
+          onChange={handleChange}
+          className="w-full border border-gray-200 rounded-md px-3 py-2
+                     focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+
+        {/* PASSWORD */}
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+          value={form.password}
+          onChange={handleChange}
+          className="w-full border border-gray-200 rounded-md px-3 py-2
+                     focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+
+        {/* BUTTON */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-md 
+                     transition flex items-center justify-center min-h-[44px]"
+        >
+          {loading ? <Loader size="sm" /> : "Login"}
+        </button>
+
+      </form>
+    </div>
   );
 }
