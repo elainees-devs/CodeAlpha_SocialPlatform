@@ -12,11 +12,6 @@ const menu = [
 export default function Sidebar() {
   return (
     <div className="h-screen w-64 border-r bg-white p-4 flex flex-col">
-      
-      {/* Logo */}
-      <div className="text-2xl font-bold mb-8">
-        SocialApp
-      </div>
 
       {/* Menu */}
       <nav className="flex flex-col gap-2">
