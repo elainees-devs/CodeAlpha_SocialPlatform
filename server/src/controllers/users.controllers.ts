@@ -1,13 +1,43 @@
+// src/controllers/users.controllers.ts
 import { Request, Response } from "express";
+import { userService } from "../services";
 import { ApiError } from "../utils";
-import { userModel } from "../models";
 
 class UserController {
   /**
+   * Create a new user
+   */
+  async createUser(req: Request, res: Response): Promise<void> {
+    const user = await userService.createUser(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: user,
+    });
+  }
+
+  /**
+   * Get user by ID
+   */
+  async findUserById(req: Request, res: Response): Promise<void> {
+    const id = Number(req.params.id);
+    if (!id) throw new ApiError(400, "User ID is required");
+
+    const user = await userService.findUserById(id);
+    if (!user) throw new ApiError(404, "User not found");
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }
+
+  /**
    * Get all users
    */
-  async getAllUsers(req: Request, res: Response) {
-    const users = await userModel.findAll();
+  async findAllUsers(_req: Request, res: Response): Promise<void> {
+    const users = await userService.findAllUsers();
 
     res.status(200).json({
       success: true,
@@ -16,20 +46,39 @@ class UserController {
   }
 
   /**
-   * Get user by ID
+   * Get currently logged in user profile
    */
-  async getUserById(req: Request, res: Response) {
-    const id = Number(req.params.id);
+  async getMe(req: Request, res: Response): Promise<void> {
+    // 1. Extract user ID attached by your authMiddleware
+    const userId = (req as any).user?.id;
 
-    if (!id) {
-      throw new ApiError(400, "User id is required");
+    if (!userId) {
+      throw new ApiError(401, "Not authenticated");
     }
 
-    const user = await userModel.findById(id);
+    // 2. Fetch the latest user data from the database
+    const user = await userService.findUserById(userId);
 
     if (!user) {
-      throw new ApiError(404, "User not found");
+      throw new ApiError(404, "User profile not found");
     }
+
+    // 3. Return the user profile
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }
+
+  /**
+   * Find user by email
+   */
+  async findUserByEmail(req: Request, res: Response): Promise<void> {
+    const email = req.params.email as string;
+    if (!email) throw new ApiError(400, "Email is required");
+
+    const user = await userService.findUserByEmail(email);
+    if (!user) throw new ApiError(404, "User not found");
 
     res.status(200).json({
       success: true,
@@ -38,20 +87,14 @@ class UserController {
   }
 
   /**
-   * Get current authenticated user
+   * Find user by username
    */
-  async getMe(req: Request, res: Response) {
-    const user_id = (req as any).user?.id;
+  async findUserByUsername(req: Request, res: Response): Promise<void> {
+    const username = req.params.username as string;
+    if (!username) throw new ApiError(400, "Username is required");
 
-    if (!user_id) {
-      throw new ApiError(401, "Unauthorized");
-    }
-
-    const user = await userModel.findById(user_id);
-
-    if (!user) {
-      throw new ApiError(404, "User not found");
-    }
+    const user = await userService.findUserByUsername(username);
+    if (!user) throw new ApiError(404, "User not found");
 
     res.status(200).json({
       success: true,
@@ -60,65 +103,59 @@ class UserController {
   }
 
   /**
-   * Update profile
-   */
-  async updateProfile(req: Request, res: Response) {
-    const user_id = (req as any).user?.id;
+ * Update user profile 
+ */
+async updateProfile(req: Request, res: Response): Promise<void> {
+  const userIdFromToken = (req as any).user?.id;
 
-    if (!user_id) {
-      throw new ApiError(401, "Unauthorized");
-    }
-
-    const updatedUser = await userModel.updateProfile(user_id, req.body);
-
-    if (!updatedUser) {
-      throw new ApiError(404, "User not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      data: updatedUser,
-    });
+  if (!userIdFromToken) {
+    throw new ApiError(401, "Unauthorized");
   }
 
+  const updated = await userService.updateProfile(
+    userIdFromToken,
+    req.body
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: updated,
+  });
+}
   /**
-   * Delete user
+   * Delete user (SECURE)
    */
-  async deleteUser(req: Request, res: Response) {
-    const id = Number(req.params.id);
+  async deleteUser(req: Request, res: Response): Promise<void> {
+    const userIdFromToken = (req as any).user?.id;
+    const idToDelete = Number(req.params.id);
 
-    if (!id) {
-      throw new ApiError(400, "User id is required");
+    if (userIdFromToken !== idToDelete) {
+      throw new ApiError(403, "You can only delete your own account");
     }
 
-    const deleted = await userModel.delete(id);
+    await userService.deleteUser(idToDelete);
 
-    if (!deleted) {
-      throw new ApiError(404, "User not found");
-    }
-
+    // Add this to finalize the request
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
     });
   }
-
   /**
-   * Toggle online status
+   * Toggle user online status
    */
-  async toggleStatus(req: Request, res: Response) {
-    const userId = (req as any).user?.id;
+  async toggleStatus(req: Request, res: Response): Promise<void> {
+    const id = Number(req.params.id);
+    if (!id) throw new ApiError(400, "User ID is required");
 
-    if (!userId) {
-      throw new ApiError(401, "Unauthorized");
-    }
-
-    const status = await userModel.toggleStatus(userId);
+    const status = await userService.toggleStatus(id);
 
     res.status(200).json({
       success: true,
-      data: { is_online: status },
+      data: {
+        is_online: status,
+      },
     });
   }
 }
