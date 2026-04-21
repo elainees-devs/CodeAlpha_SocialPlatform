@@ -9,23 +9,32 @@ export default function CreatePost() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      return api.post("/posts", { content });
+      console.log("🔥 Creating post:", content);
+
+      const { data } = await api.post("/posts", { content });
+
+      console.log("🔥 Response:", data);
+
+      return data;
     },
 
     onSuccess: () => {
       setContent("");
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
+
+    onError: (err) => {
+      console.log("❌ Error creating post:", err);
+    },
   });
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 mb-6 bg-white">
-      
+    <div className="border rounded-lg p-4 mb-6 bg-white">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="What's on your mind?"
-        className="w-full border border-gray-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full border p-2 rounded"
         rows={3}
       />
 
@@ -33,12 +42,11 @@ export default function CreatePost() {
         <button
           onClick={() => mutation.mutate()}
           disabled={!content.trim() || mutation.isPending}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition disabled:opacity-50"
+          className="bg-purple-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
           {mutation.isPending ? "Posting..." : "Post"}
         </button>
       </div>
-      
     </div>
   );
 }
