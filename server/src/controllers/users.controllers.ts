@@ -102,19 +102,26 @@ class UserController {
     });
   }
 
-  /**
- * Update user profile 
- */
-async updateProfile(req: Request, res: Response): Promise<void> {
+ async updateProfile(req: Request, res: Response): Promise<void> {
   const userIdFromToken = (req as any).user?.id;
 
   if (!userIdFromToken) {
     throw new ApiError(401, "Unauthorized");
   }
 
+  const file = req.file;
+  const avatar_url = file
+  ? `/uploads/${file.filename}`
+  : undefined;
+
+  const updateData = {
+    ...req.body,
+    ...(avatar_url && { avatar_url }),
+  };
+
   const updated = await userService.updateProfile(
     userIdFromToken,
-    req.body
+    updateData
   );
 
   res.status(200).json({
