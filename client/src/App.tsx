@@ -1,15 +1,8 @@
+// src/App.tsx
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
 
-import './App.css'
 
-function App() {
-  
-
-  return (
-    <>
-      <h1>Welcome to Social Connect platform!</h1>
-      <p>This is a simple React application using TypeScript.</p>
-    </>
-  )
+export default function App() {
+  return <RouterProvider router={router} />;
 }
-
-export default App
