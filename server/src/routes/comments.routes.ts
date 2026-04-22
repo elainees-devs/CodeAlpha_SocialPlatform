@@ -1,8 +1,8 @@
+// src/routes/comments.routes.ts
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
-
 import { commentController } from "../controllers";
-import { authenticateMiddleware } from "../middlewares/auth.middleware";
+import { authenticateMiddleware } from "../middlewares";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.post(
  */
 router.get(
   "/post/:postId",
-  asyncHandler(commentController.getCommentsByPost)
+  asyncHandler(commentController.findCommentsByPostId)
 );
 
 /**
