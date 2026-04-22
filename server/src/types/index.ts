@@ -142,7 +142,7 @@ export type CreateFollowInput = {
 
 /**
  * ======================
- * RESPONSE WRAPPERS
+ * RESPONSE WRAPPERS - what frontend uses
  * ======================
  */
 export interface IFeedResponse {
@@ -155,4 +155,10 @@ export interface IFeedResponse {
 export interface FollowResponse {
   following: boolean;
   data?: IFollow;
+}
+
+export interface ICommentResponse extends IBase {
+  post_id: number;
+  content: string;
+  author: UserProfileResponse;
 }
