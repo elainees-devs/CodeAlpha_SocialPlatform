@@ -7,11 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/**
- * ======================
- * USER
- * ======================
- */
+
 model User {
   id            Int      @id @default(autoincrement())
   username      String
@@ -24,9 +20,9 @@ model User {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
 
   followers Follow[] @relation("followers")
   following Follow[] @relation("following")
@@ -37,14 +33,11 @@ model User {
   @@map("users")
 }
 
-/**
- * ======================
- * POST
- * ======================
- */
+
 model Post {
   id         Int      @id @default(autoincrement())
   user_id    Int
+
   content    String
   image_url  String?
 
@@ -59,22 +52,19 @@ model Post {
   comments Comment[]
   likes    Like[]
 
+  @@index([user_id])
   @@index([created_at(sort: Desc)])
   @@index([user_id, created_at(sort: Desc)])
   @@map("posts")
 }
 
-/**
- * ======================
- * COMMENT
- * ======================
- */
+
 model Comment {
   id         Int      @id @default(autoincrement())
   user_id    Int
   post_id    Int
-  content    String
 
+  content    String
   created_at DateTime @default(now())
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -85,11 +75,7 @@ model Comment {
   @@map("comments")
 }
 
-/**
- * ======================
- * LIKE
- * ======================
- */
+
 model Like {
   id         Int      @id @default(autoincrement())
   user_id    Int
@@ -106,11 +92,6 @@ model Like {
   @@map("likes")
 }
 
-/**
- * ======================
- * FOLLOW
- * ======================
- */
 model Follow {
   id           Int      @id @default(autoincrement())
   follower_id  Int
