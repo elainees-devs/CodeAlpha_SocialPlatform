@@ -1,10 +1,19 @@
+// src/routes/posts.routes.ts
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
-
 import { postController } from "../controllers";
-import { authenticateMiddleware } from "../middlewares/auth.middleware";
+import { authenticateMiddleware } from "../middlewares";
 
 const router = Router();
+
+/**
+ * Get feed (paginated)
+ */
+
+router.get(
+  "/feed",
+  asyncHandler(postController.getFeed)
+);
 
 /**
  * Create a post
@@ -28,13 +37,28 @@ router.get(
  */
 router.get(
   "/user/:userId",
-  asyncHandler(postController.getPostsByUser)
+  asyncHandler(postController.getUserPosts)
 );
 
-router.get(
-  "/",
-  asyncHandler(postController.getAllPosts)
+/**
+ * Toggle Like / Unlike
+ */
+router.post(
+  "/:id/like",
+  authenticateMiddleware,
+  asyncHandler(postController.toggleLike)
 );
+
+/**
+ * Add comment
+ */
+router.post(
+  "/:id/comment",
+  authenticateMiddleware,
+  asyncHandler(postController.addComment)
+);
+
+
 
 /**
  * Delete post (only owner)
