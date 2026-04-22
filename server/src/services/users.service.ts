@@ -107,28 +107,29 @@ class UserService {
     return users.map((u) => this.mapUserProfile(u));
   }
 
-  // ======================
-  // UPDATE PROFILE (SAFE)
-  // ======================
-  async updateProfile(
-    id: number,
-    data: {
-      username?: string;
-      bio?: string | null;
-      avatar_url?: string | null;
-    },
-  ): Promise<UserProfileResponse> {
-    const updated = await prisma.user.update({
-      where: { id },
-      data: {
-        username: data.username,
-        bio: data.bio,
-        avatar_url: data.avatar_url,
-      },
-    });
+// ======================
+// UPDATE PROFILE (SAFE)
+// ======================
+async updateProfile(
+  id: number,
+  data: {
+    username?: string;
+    bio?: string | null;
+    avatar_url?: string | null;
+  },
+): Promise<UserProfileResponse> {
 
-    return this.mapUserProfile(updated);
-  }
+  const updated = await prisma.user.update({
+    where: { id },
+    data: {
+      ...(data.username !== undefined && { username: data.username }),
+      ...(data.bio !== undefined && { bio: data.bio }),
+      ...(data.avatar_url !== undefined && { avatar_url: data.avatar_url }),
+    },
+  });
+
+  return this.mapUserProfile(updated);
+}
 
   // ======================
   // DELETE USER
