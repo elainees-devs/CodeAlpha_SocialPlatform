@@ -1,115 +1,120 @@
+// src/controllers/auth.controllers.ts
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { prisma } from "../utils";
+import { authService } from "../services";
 import { ApiError } from "../utils";
 
 class AuthController {
-  /**
-   * Register user
-   */
+  // ======================
+  // REGISTER
+  // ======================
   async register(req: Request, res: Response) {
-    const { username, email, password } = req.body;
+    try {
+      const user = await authService.register(req.body);
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      throw new ApiError(400, "User already exists");
+      res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        data: user,
+      });
+    } catch (error: any) {
+      throw new ApiError(400, error.message);
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password_hash: hashedPassword,
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        created_at: true,
-      },
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      data: user,
-    });
   }
 
-  /**
-   * Login user
-   */
+  // ======================
+  // LOGIN
+  // ======================
   async login(req: Request, res: Response) {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+      if (!email || !password) {
+        throw new ApiError(400, "Email and password are required");
+      }
 
-    if (!user) {
-      throw new ApiError(401, "Invalid credentials");
+      const result = await authService.login(email, password);
+
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: result.user,
+        token: result.token,
+      });
+    } catch (error: any) {
+      throw new ApiError(401, error.message);
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-
-    if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid credentials");
-    }
-
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
-    });
   }
 
-  /**
-   * Get current user
-   */
+  // ======================
+  // GET CURRENT USER
+  // ======================
   async me(req: Request, res: Response) {
-    const user_id = (req as any).user?.id;
+    try {
+      const userId = (req as any).user?.id;
 
-    if (!user_id) {
-      throw new ApiError(401, "Unauthorized");
+      if (!userId) {
+        throw new ApiError(401, "Unauthorized");
+      }
+
+      const user = await authService.me(userId);
+
+      if (!user) {
+        throw new ApiError(404, "User not found");
+      }
+
+      res.status(200).json({
+        success: true,
+        data: user,
+      });
+    } catch (error: any) {
+      throw new ApiError(400, error.message);
     }
+  }
 
-    const user = await prisma.user.findUnique({
-      where: { id: user_id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        bio: true,
-        avatar_url: true,
-        is_online: true,
-        created_at: true,
-      },
-    });
+  // ======================
+  // LOGOUT
+  // ======================
+  async logout(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
 
-    if (!user) {
-      throw new ApiError(404, "User not found");
+      if (!userId) {
+        throw new ApiError(401, "Unauthorized");
+      }
+
+      const result = await authService.logout(userId);
+
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      throw new ApiError(400, error.message);
     }
+  }
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+  // ======================
+  // VERIFY TOKEN (optional debug endpoint)
+  // ======================
+  async verifyToken(req: Request, res: Response) {
+    try {
+      const token =
+        req.headers.authorization?.split(" ")[1] || req.body.token;
+
+      if (!token) {
+        throw new ApiError(400, "Token required");
+      }
+
+      const decoded = authService.verifyToken(token);
+
+      res.status(200).json({
+        success: true,
+        data: decoded,
+      });
+    } catch (error: any) {
+      throw new ApiError(401, "Invalid token");
+    }
   }
 }
 
