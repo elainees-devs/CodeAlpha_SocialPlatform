@@ -1,5 +1,5 @@
 // src/controllers/users.controllers.ts
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { userService } from "../services";
 import { ApiError } from "../utils";
 
@@ -165,6 +165,28 @@ class UserController {
         is_online: status,
       },
     });
+  }
+
+   /**
+   * Follow suggestions
+   */
+  async getSuggestions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const user_id = (req as any).user?.id;
+
+      const users = await userService.getFollowSuggestions(user_id);
+
+      res.json({
+        success: true,
+        data: users,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 
