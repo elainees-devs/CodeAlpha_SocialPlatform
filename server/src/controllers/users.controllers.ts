@@ -110,9 +110,10 @@ class UserController {
   }
 
   const file = req.file;
+
   const avatar_url = file
-  ? `/uploads/${file.filename}`
-  : undefined;
+    ? `/uploads/${file.filename}`
+    : undefined;
 
   const updateData = {
     ...req.body,
