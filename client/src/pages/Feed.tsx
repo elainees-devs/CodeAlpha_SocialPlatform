@@ -1,15 +1,13 @@
 // src/pages/Feed.tsx
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { Heart, MessageCircle } from "lucide-react";
 
 import api from "../services/api";
 import CreatePost from "../components/post/CreatePost";
 import { FeedPost, FeedResponse } from "../types/feed.types";
+import { useState } from "react";
+import CommentModal from "../components/comment/CommentModal";
 
 const fetchFeed = async (): Promise<FeedPost[]> => {
   const { data } = await api.get<FeedResponse>("/posts/feed");
@@ -18,6 +16,12 @@ const fetchFeed = async (): Promise<FeedPost[]> => {
 
 export default function Feed() {
   const queryClient = useQueryClient();
+
+  // ======================
+  // COMMENT MODAL STATE
+  // ======================
+  const [isCommentOpen, setIsCommentOpen] = useState<boolean>(false);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 
   // ======================
   // FETCH FEED
@@ -85,7 +89,7 @@ export default function Feed() {
                 liked_by_me: data.isLiked,
                 likes_count: data.likesCount,
               }
-            : post
+            : post,
         );
       });
     },
@@ -96,17 +100,13 @@ export default function Feed() {
   // ======================
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-purple-700 mb-6">
-        Home Feed
-      </h1>
+      <h1 className="text-2xl font-bold text-purple-700 mb-6">Home Feed</h1>
 
       <CreatePost />
 
       {/* LOADING */}
       {isLoading && (
-        <div className="text-gray-500 animate-pulse">
-          Loading feed...
-        </div>
+        <div className="text-gray-500 animate-pulse">Loading feed...</div>
       )}
 
       {/* ERROR */}
@@ -139,9 +139,7 @@ export default function Feed() {
               />
 
               <div>
-                <p className="font-semibold text-sm">
-                  {post.author.username}
-                </p>
+                <p className="font-semibold text-sm">{post.author.username}</p>
                 <p className="text-xs text-gray-400">
                   {new Date(post.created_at).toLocaleString()}
                 </p>
@@ -149,13 +147,10 @@ export default function Feed() {
             </div>
 
             {/* CONTENT */}
-            <p className="text-gray-800 text-sm mb-3">
-              {post.content}
-            </p>
+            <p className="text-gray-800 text-sm mb-3">{post.content}</p>
 
             {/* ACTIONS */}
             <div className="flex items-center gap-6 text-sm text-gray-600 border-t pt-3">
-
               {/* LIKE */}
               <button
                 onClick={() => likeMutation.mutate(post.id)}
@@ -173,15 +168,30 @@ export default function Feed() {
               </button>
 
               {/* COMMENT */}
-              <button className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  setSelectedPostId(post.id);
+                  setIsCommentOpen(true);
+                }}
+                className="flex items-center gap-1"
+              >
                 <MessageCircle size={18} />
                 <span>{post.comments_count}</span>
               </button>
-
             </div>
           </div>
         ))}
       </div>
+
+      {/* COMMENT MODAL */}
+      <CommentModal
+        postId={selectedPostId}
+        isOpen={isCommentOpen}
+        onClose={() => {
+          setIsCommentOpen(false);
+          setSelectedPostId(null);
+        }}
+      />
     </div>
   );
 }
