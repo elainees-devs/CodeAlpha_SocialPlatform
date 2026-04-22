@@ -1,76 +1,84 @@
+// src/controllers/comments.controllers.ts
 import { Request, Response } from "express";
+import { commentService } from "../services";
 import { ApiError } from "../utils";
-import { commentModel } from "../models";
 
 class CommentController {
-  /**
-   * Create comment
-   */
-  async createComment(req: Request, res: Response) {
-    const user_id = (req as any).user?.id;
-    const { post_id, content } = req.body;
+  // ======================
+  // CREATE COMMENT
+  // ======================
+  createComment = async (req: Request, res: Response) => {
+    try {
+      const user_id = (req as any).user?.id;
+      const post_id = Number(req.params.postId);
+      const { content } = req.body;
 
-    if (!user_id) {
-      throw new ApiError(401, "Unauthorized");
+      if (!content || content.trim().length === 0) {
+        throw new ApiError(400, "Comment content is required");
+      }
+
+      if (!post_id) {
+        throw new ApiError(400, "Post ID is required");
+      }
+
+      const comment = await commentService.createComment(user_id, post_id, content);
+
+      res.status(201).json({
+        success: true,
+        message: "Comment added successfully",
+        data: comment,
+      });
+    } catch (error: any) {
+      // If service throws "Post not found", propagate it
+      const status = error.message === "Post not found" ? 404 : 400;
+      throw new ApiError(status, error.message);
     }
+  };
 
-    if (!post_id || !content) {
-      throw new ApiError(400, "post_id and content are required");
+  // ======================
+  // GET COMMENTS BY POST
+  // ======================
+  findCommentsByPostId = async (req: Request, res: Response) => {
+    try {
+      const post_id = Number(req.params.postId);
+
+      if (!post_id) {
+        throw new ApiError(400, "Invalid post ID");
+      }
+
+      const comments = await commentService.findCommentsByPostId(post_id);
+
+      res.status(200).json({
+        success: true,
+        data: comments,
+      });
+    } catch (error: any) {
+      throw new ApiError(400, error.message);
     }
+  };
 
-    const comment = await commentModel.create(
-      Number(user_id),
-      Number(post_id),
-      content,
-    );
+  // ======================
+  // DELETE COMMENT
+  // ======================
+  deleteComment = async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const user_id = (req as any).user?.id;
 
-    res.status(201).json({
-      success: true,
-      message: "Comment created successfully",
-      data: comment,
-    });
-  }
+      const success = await commentService.deleteComment(id, user_id);
 
-  /**
-   * Get comments for a post
-   */
-  async getCommentsByPost(req: Request, res: Response) {
-    const post_id = Number(req.params.postId);
+      if (!success) {
+        throw new ApiError(403, "You are not authorized to delete this comment or it does not exist");
+      }
 
-    if (!post_id) {
-      throw new ApiError(400, "postId is required");
+      res.status(200).json({
+        success: true,
+        message: "Comment deleted successfully",
+      });
+    } catch (error: any) {
+      throw new ApiError(400, error.message);
     }
-
-    const comments = await commentModel.findByPostId(post_id);
-
-    res.status(200).json({
-      success: true,
-      data: comments,
-    });
-  }
-
-  /**
-   * Delete comment
-   */
-  async deleteComment(req: Request, res: Response) {
-    const user_id = (req as any).user?.id;
-    const id = Number(req.params.id);
-
-    if (!user_id) {
-      throw new ApiError(401, "Unauthorized");
-    }
-
-    const deleted = await commentModel.delete(id, Number(user_id));
-
-    if (!deleted) {
-      throw new ApiError(404, "Comment not found or not owned by user");
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Comment deleted successfully",
-    });
-  }
+  };
 }
 
 export const commentController = new CommentController();
