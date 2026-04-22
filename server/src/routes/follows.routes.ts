@@ -1,8 +1,8 @@
+// src/routes/follows.routes.ts
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { followController } from "../controllers";
 import { authenticateMiddleware } from "../middlewares";
-
 
 const router = Router();
 
@@ -13,15 +13,6 @@ router.post(
   "/:user_id",
   authenticateMiddleware,
   asyncHandler(followController.followUser)
-);
-
-/**
- * Unfollow user (kept for compatibility)
- */
-router.delete(
-  "/:user_id",
-  authenticateMiddleware,
-  asyncHandler(followController.unfollowUser)
 );
 
 /**

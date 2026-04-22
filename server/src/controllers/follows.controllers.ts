@@ -1,5 +1,5 @@
 // src/controllers/follows.controllers.ts
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils";
 import { followService } from "../services";
 
@@ -7,96 +7,83 @@ class FollowController {
   /**
    * Toggle follow/unfollow a user
    */
-  async followUser(req: Request, res: Response) {
-  const follower_id = (req as any).user?.id;
-  const following_id = Number(req.params.user_id);
+  followUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const follower_id = (req as any).user?.id;
+      const following_id = Number(req.params.user_id);
 
-  if (!follower_id) {
-    throw new ApiError(401, "Unauthorized");
-  }
+      if (!follower_id) {
+        throw new ApiError(401, "Unauthorized");
+      }
 
-  if (!following_id) {
-    throw new ApiError(400, "User id is required");
-  }
+      if (Number.isNaN(following_id)) {
+        throw new ApiError(400, "Invalid user id");
+      }
 
-  if (follower_id === following_id) {
-    throw new ApiError(400, "You cannot follow yourself");
-  }
+      if (follower_id === following_id) {
+        throw new ApiError(400, "You cannot follow yourself");
+      }
 
-  const result = await followService.toggleFollow(follower_id, following_id);
+      const result = await followService.toggleFollow(
+        follower_id,
+        following_id
+      );
 
-  res.status(200).json({
-    success: true,
-    message: result.following
-      ? "User followed successfully"
-      : "User unfollowed successfully",
-    data: result,
-  });
-}
-
-  /**
-   * Unfollow a user (kept for compatibility, but uses toggle internally)
-   */
-  async unfollowUser(req: Request, res: Response) {
-    const follower_id = (req as any).user?.id;
-    const following_id = Number(req.params.user_id);
-
-    if (!follower_id) {
-      throw new ApiError(401, "Unauthorized");
+      res.status(200).json({
+        success: true,
+        message: result.following
+          ? "User followed successfully"
+          : "User unfollowed successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    if (!following_id) {
-      throw new ApiError(400, "User id is required");
-    }
-
-    const result = await followService.toggleFollow(follower_id, following_id);
-
-    res.status(200).json({
-      success: true,
-      message: result.following
-        ? "User followed successfully"
-        : "User unfollowed successfully",
-      data: result,
-    });
-  }
+  };
 
   /**
    * Get followers of a user
    */
-  async getFollowers(req: Request, res: Response) {
-    const user_id = Number(req.params.user_id);
+  getFollowers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user_id = Number(req.params.user_id);
 
-    if (!user_id) {
-      throw new ApiError(400, "User id is required");
+      if (Number.isNaN(user_id)) {
+        throw new ApiError(400, "Invalid user id");
+      }
+
+      const followers = await followService.getFollowers(user_id);
+
+      res.status(200).json({
+        success: true,
+        data: followers,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const followers = await followService.getFollowers(user_id);
-
-    res.status(200).json({
-      success: true,
-      data: followers,
-    });
-  }
+  };
 
   /**
    * Get users a person follows
    */
-  async getFollowing(req: Request, res: Response) {
-    const user_id = Number(req.params.user_id);
+  getFollowing = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user_id = Number(req.params.user_id);
 
-    if (!user_id) {
-      throw new ApiError(400, "User id is required");
+      if (Number.isNaN(user_id)) {
+        throw new ApiError(400, "Invalid user id");
+      }
+
+      const following = await followService.getFollowing(user_id);
+
+      res.status(200).json({
+        success: true,
+        data: following,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const following = await followService.getFollowing(user_id);
-
-    res.status(200).json({
-      success: true,
-      data: following,
-    });
-  }
-
-  
+  };
 }
 
 export const followController = new FollowController();
