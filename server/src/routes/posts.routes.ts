@@ -49,14 +49,14 @@ router.post(
   asyncHandler(postController.toggleLike)
 );
 
-/**
- * Add comment
- */
-router.post(
-  "/:id/comment",
-  authenticateMiddleware,
-  asyncHandler(postController.addComment)
-);
+// /**
+//  * Add comment
+//  */
+// router.post(
+//   "/:id/comment",
+//   authenticateMiddleware,
+//   asyncHandler(postController.addComment)
+// );
 
 
 
