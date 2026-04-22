@@ -161,6 +161,55 @@ async updateProfile(
 
     return updated.is_online;
   }
+
+    // ======================
+  // FOLLOW SUGGESTIONS
+  // ======================
+  async getFollowSuggestions(user_id: number): Promise<UserProfileResponse[]> {
+    // 1. get users already followed
+    const following = await prisma.follow.findMany({
+      where: { follower_id: user_id },
+      select: { following_id: true },
+    });
+
+    const followingIds = following.map(f => f.following_id);
+
+    // 2. fetch candidate users
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          notIn: [...followingIds, user_id],
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        bio: true,
+        avatar_url: true,
+        is_online: true,
+        created_at: true,
+        updated_at: true,
+        _count: {
+          select: {
+            followers: true,
+          },
+        },
+      },
+      take: 20,
+    });
+
+    // 3. rank users (simple popularity score)
+    const ranked = users
+      .map((u) => ({
+        ...this.mapUserProfile(u),
+        score: u._count.followers,
+      }))
+      .sort((a, b) => (b as any).score - (a as any).score)
+      .slice(0, 10);
+
+    return ranked;
+  }
 }
 
 export const userService = new UserService();
