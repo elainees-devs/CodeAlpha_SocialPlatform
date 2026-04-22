@@ -1,6 +1,7 @@
+// src/controllers/follows.controllers.ts
 import { Request, Response } from "express";
 import { ApiError } from "../utils";
-import { followModel } from "../models";
+import { followService } from "../services";
 
 class FollowController {
   /**
@@ -22,7 +23,7 @@ class FollowController {
     throw new ApiError(400, "You cannot follow yourself");
   }
 
-  const result = await followModel.toggleFollow(follower_id, following_id);
+  const result = await followService.toggleFollow(follower_id, following_id);
 
   res.status(200).json({
     success: true,
@@ -48,7 +49,7 @@ class FollowController {
       throw new ApiError(400, "User id is required");
     }
 
-    const result = await followModel.toggleFollow(follower_id, following_id);
+    const result = await followService.toggleFollow(follower_id, following_id);
 
     res.status(200).json({
       success: true,
@@ -69,7 +70,7 @@ class FollowController {
       throw new ApiError(400, "User id is required");
     }
 
-    const followers = await followModel.getFollowers(user_id);
+    const followers = await followService.getFollowers(user_id);
 
     res.status(200).json({
       success: true,
@@ -87,7 +88,7 @@ class FollowController {
       throw new ApiError(400, "User id is required");
     }
 
-    const following = await followModel.getFollowing(user_id);
+    const following = await followService.getFollowing(user_id);
 
     res.status(200).json({
       success: true,
