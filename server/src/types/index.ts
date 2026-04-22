@@ -1,5 +1,8 @@
+
 /**
- * Base Entity
+ * ======================
+ * BASE
+ * ======================
  */
 export interface IBase {
   id: number;
@@ -7,7 +10,9 @@ export interface IBase {
 }
 
 /**
- * User Entity (internal DB shape)
+ * ======================
+ * USER (matches Prisma User model)
+ * ======================
  */
 export interface IUser extends IBase {
   username: string;
@@ -15,47 +20,72 @@ export interface IUser extends IBase {
   password_hash: string;
   bio?: string | null;
   avatar_url?: string | null;
-  is_online?: boolean;
+  is_online: boolean; // Prisma default false
+  updated_at: string;
 }
 
 /**
- * Public User Response (SAFE for frontend/API)
+ * Safe API response (NEVER expose password_hash)
  */
-export type UserProfileResponse = Omit<IUser, "password_hash">;
+export interface UserProfileResponse {
+  id: number;
+  username: string;
+  email: string;
+  bio?: string | null;
+  avatar_url?: string | null;
+  is_online: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 /**
- * Register Input (IMPORTANT FIX)
- * - frontend sends plain password
- * - backend will hash it
+ * ======================
+ * AUTH INPUTS
+ * ======================
  */
 export interface RegisterUserInput {
   username: string;
   email: string;
-  password_hash: string;
+  password: string; // frontend sends raw password
   bio?: string | null;
   avatar_url?: string | null;
-  is_online?: boolean;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
 }
 
 /**
- * Post Entity
+ * ======================
+ * POST (matches Prisma Post model)
+ * ======================
  */
 export interface IPost extends IBase {
   user_id: number;
+
   content: string;
   image_url?: string | null;
+
+  likes_count: number;
+  comments_count: number;
+  shares_count: number;
+
+  updated_at: string;
 }
 
 /**
- * Post Response (with counts)
+ * API Response for posts (what frontend uses)
  */
 export interface IPostResponse extends IPost {
-  comments_count: number;
-  likes_count: number;
+  author: UserProfileResponse;
+  liked_by_me: boolean;
 }
 
 /**
- * Comment Entity
+ * ======================
+ * COMMENT
+ * ======================
  */
 export interface IComment extends IBase {
   user_id: number;
@@ -64,7 +94,9 @@ export interface IComment extends IBase {
 }
 
 /**
- * Like Entity
+ * ======================
+ * LIKE
+ * ======================
  */
 export interface ILike extends IBase {
   user_id: number;
@@ -72,7 +104,9 @@ export interface ILike extends IBase {
 }
 
 /**
- * Follow Entity
+ * ======================
+ * FOLLOW
+ * ======================
  */
 export interface IFollow extends IBase {
   follower_id: number;
@@ -84,23 +118,41 @@ export interface IFollow extends IBase {
  * INPUT TYPES
  * ======================
  */
+export type CreatePostInput = {
+  user_id: number;
+  content: string;
+  image_url?: string | null;
+};
+
+export type CreateCommentInput = {
+  user_id: number;
+  post_id: number;
+  content: string;
+};
+
+export type CreateLikeInput = {
+  user_id: number;
+  post_id: number;
+};
+
+export type CreateFollowInput = {
+  follower_id: number;
+  following_id: number;
+};
 
 /**
- * Create Post Input
+ * ======================
+ * RESPONSE WRAPPERS
+ * ======================
  */
-export type CreatePostInput = Omit<IPost, "id" | "created_at">;
+export interface IFeedResponse {
+  posts: IPostResponse[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
 
-/**
- * Create Comment Input (optional future use)
- */
-export type CreateCommentInput = Omit<IComment, "id" | "created_at">;
-
-/**
- * Create Like Input (optional future use)
- */
-export type CreateLikeInput = Omit<ILike, "id" | "created_at">;
-
-/**
- * Follow Input (optional future use)
- */
-export type CreateFollowInput = Omit<IFollow, "id" | "created_at">;
+export interface FollowResponse {
+  following: boolean;
+  data?: IFollow;
+}
