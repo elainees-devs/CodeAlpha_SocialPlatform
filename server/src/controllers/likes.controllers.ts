@@ -1,6 +1,7 @@
+// src/controllers/likes.controllers.ts
 import { Request, Response } from "express";
 import { ApiError } from "../utils";
-import { likeModel } from "../models";
+import { likeService } from "../services";
 
 class LikeController {
   /**
@@ -13,10 +14,10 @@ class LikeController {
     if (!user_id) throw new ApiError(401, "Unauthorized");
     if (!post_id) throw new ApiError(400, "Post id is required");
 
-    const exists = await likeModel.isLiked(user_id, post_id);
+    const exists = await likeService.isLiked(user_id, post_id);
     if (exists) throw new ApiError(400, "Post already liked");
 
-    const like = await likeModel.addLike(user_id, post_id);
+    const like = await likeService.addLike(user_id, post_id);
 
     res.status(201).json({
       success: true,
@@ -37,7 +38,7 @@ class LikeController {
     if (!user_id) throw new ApiError(401, "Unauthorized");
     if (!post_id) throw new ApiError(400, "Post id is required");
 
-    const removed = await likeModel.removeLike(user_id, post_id);
+    const removed = await likeService.removeLike(user_id, post_id);
 
     if (!removed) throw new ApiError(404, "Like not found");
 
@@ -59,7 +60,7 @@ class LikeController {
     if (!user_id) throw new ApiError(401, "Unauthorized");
     if (!post_id) throw new ApiError(400, "Post id is required");
 
-    const liked = await likeModel.isLiked(user_id, post_id);
+    const liked = await likeService.isLiked(user_id, post_id);
 
     res.status(200).json({
       success: true,
@@ -80,7 +81,7 @@ async toggleLike(req: Request, res: Response): Promise<void> {
   if (!user_id) throw new ApiError(401, "Unauthorized");
   if (!post_id) throw new ApiError(400, "Post id is required");
 
-  const result = await likeModel.toggleLike(user_id, post_id);
+  const result = await likeService.toggleLike(user_id, post_id);
 
   if (result.liked) {
     res.status(201).json({
