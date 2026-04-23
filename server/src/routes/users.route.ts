@@ -25,15 +25,6 @@ router.get(
 );
 
 /**
- * Get follow suggestions
- */
-router.get(
-  "/suggestions",
-  authenticateMiddleware,
-  asyncHandler(userController.getSuggestions)
-);
-
-/**
  * Toggle online status (current user)
  */
 router.patch(
