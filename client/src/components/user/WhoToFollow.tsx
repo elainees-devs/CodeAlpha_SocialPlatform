@@ -1,14 +1,14 @@
 // src/components/user/WhoToFollow.tsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSuggestions, SuggestUser } from "../../services/follow.service";
-import api from "../../services/api";
+import { FollowUser } from "../../types/follow.types";
+import { followService } from "../../services/follow.service";
 
 export default function WhoToFollow() {
   const queryClient = useQueryClient();
 
-  const { data: users = [] } = useQuery<SuggestUser[]>({
+  const { data: users = [] } = useQuery<FollowUser[]>({
     queryKey: ["followSuggestions"],
-    queryFn: getSuggestions,
+    queryFn: () => followService.getSuggestions(),
 
     // prevent unnecessary refetches
     refetchOnWindowFocus: false,
@@ -17,18 +17,15 @@ export default function WhoToFollow() {
 
   const followMutation = useMutation({
     mutationFn: async (userId: number) => {
-      await api.post(`/follows/${userId}`);
+      await followService.toggleFollow(userId);
       return userId;
     },
 
     onSuccess: (userId) => {
-      queryClient.setQueryData<SuggestUser[]>(
-        ["followSuggestions"],
-        (old) => {
-          if (!old) return [];
-          return old.filter((user) => user.id !== userId);
-        }
-      );
+      queryClient.setQueryData<FollowUser[]>(["followSuggestions"], (old) => {
+        if (!old) return [];
+        return old.filter((user) => user.id !== userId);
+      });
     },
   });
 
@@ -38,14 +35,18 @@ export default function WhoToFollow() {
 
       <div className="space-y-4">
         {users.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center justify-between"
-          >
+          <div key={user.id} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={user.avatar_url || "https://via.placeholder.com/40"}
-                className="w-9 h-9 rounded-full"
+                src={
+                  user.avatar_url
+                    ? user.avatar_url.startsWith("http")
+                      ? user.avatar_url
+                      : `http://localhost:3000${user.avatar_url}`
+                    : "https://via.placeholder.com/40"
+                }
+                className="w-9 h-9 rounded-full object-cover"
+                alt="avatar"
               />
 
               <div className="leading-tight">
