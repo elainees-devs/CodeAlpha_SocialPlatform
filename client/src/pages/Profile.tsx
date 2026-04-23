@@ -7,6 +7,7 @@ import { Loader } from "../components/shared/Loader";
 import EditProfileModal from "../components/profile/EditProfileModal";
 import { BackendErrorResponse } from "../types/error.types";
 import { UserProfile } from "../types/user.types";
+import BackButton from "../components/shared/BackButton";
 export default function Profile() {
   const [editOpen, setEditOpen] = useState(false);
 
@@ -37,6 +38,7 @@ export default function Profile() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <BackButton />
       {/* PROFILE CARD */}
       <div className="bg-white rounded-xl shadow p-6">
         {/* HEADER */}
