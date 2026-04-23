@@ -84,6 +84,25 @@ class FollowController {
       next(error);
     }
   };
+
+async getSuggestions(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user_id = (req as any).user?.id;
+
+    if (!user_id) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const users = await followService.getSuggestions(user_id);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 }
 
 export const followController = new FollowController();
