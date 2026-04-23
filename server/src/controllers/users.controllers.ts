@@ -167,27 +167,7 @@ class UserController {
     });
   }
 
-   /**
-   * Follow suggestions
-   */
-  async getSuggestions(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const user_id = (req as any).user?.id;
 
-      const users = await userService.getFollowSuggestions(user_id);
-
-      res.json({
-        success: true,
-        data: users,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
 }
 
 export const userController = new UserController();
