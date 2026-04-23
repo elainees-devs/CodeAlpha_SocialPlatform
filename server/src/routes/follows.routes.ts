@@ -7,10 +7,11 @@ import { authenticateMiddleware } from "../middlewares";
 const router = Router();
 
 /**
- * Follow / Unfollow user (toggle)
+ * Toggle follow / unfollow a user
+ * (acts like a relationship resource)
  */
 router.post(
-  "/:user_id",
+  "/:user_id/follow",
   authenticateMiddleware,
   asyncHandler(followController.followUser)
 );
@@ -19,16 +20,25 @@ router.post(
  * Get followers of a user
  */
 router.get(
-  "/followers/:user_id",
+  "/:user_id/followers",
   asyncHandler(followController.getFollowers)
 );
 
 /**
- * Get following of a user
+ * Get users that a user is following
  */
 router.get(
-  "/following/:user_id",
+  "/:user_id/following",
   asyncHandler(followController.getFollowing)
+);
+
+/**
+ * Get follow suggestions for current authenticated user
+ */
+router.get(
+  "/suggestions",
+  authenticateMiddleware,
+  asyncHandler(followController.getSuggestions)
 );
 
 export default router;
