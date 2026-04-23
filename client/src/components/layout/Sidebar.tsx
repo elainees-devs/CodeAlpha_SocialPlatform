@@ -26,10 +26,10 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="h-screen w-64 border-r bg-white p-4 flex flex-col">
+    <div className="h-80vh w-64 border-r bg-white p-4 flex flex-col mt-4 -ml-12">
 
       {/* MENU */}
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-4">
         {menu.map((item) => {
           const Icon = item.icon;
 
@@ -53,7 +53,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Spacer */}
-      <div className="flex-1" />
+      <div className="flex-1 pt-4 mt-4" />
 
       {/* LOGOUT */}
       <div className="pt-4 border-t">
