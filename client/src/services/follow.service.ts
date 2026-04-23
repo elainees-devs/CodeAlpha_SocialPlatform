@@ -63,6 +63,18 @@ class FollowService {
       .map((item) => item.following)
       .filter((u): u is FollowUser => Boolean(u));
   }
+
+   /**
+    * Check if the current user is following another user
+    * 
+    */
+  async isFollowing(userId: number): Promise<boolean> {
+    const { data } = await api.get<
+      ApiResponse<{ following: boolean }>
+    >(`/follows/${userId}/is-following`);
+
+    return data.data.following;
+  }
 }
 
 export const followService = new FollowService();
