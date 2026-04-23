@@ -10,6 +10,7 @@ import { Loader } from "../components/shared/Loader";
 import EditProfileModal from "../components/profile/EditProfileModal";
 import BackButton from "../components/shared/BackButton";
 import ProfileTabs from "../components/profile/ProfileTabs";
+import UnfollowButton from "../components/profile/UnfollowButton";
 
 import { BackendErrorResponse } from "../types/error.types";
 import { UserProfile } from "../types/user.types";
@@ -69,14 +70,32 @@ export default function Profile() {
 
   if (!user) return null;
 
-  const renderUser = (u: FollowUser) => (
-    <div key={u.id} className="flex items-center gap-3">
-      <img
-        src={getAvatarUrl(u.avatar_url)}
-        className="w-8 h-8 rounded-full object-cover"
-        alt={u.username}
-      />
-      <p className="text-sm font-medium">{u.username}</p>
+  /**
+   * Render user row
+   * showUnfollow = only for "following" tab
+   */
+  const renderUser = (u: FollowUser, showUnfollow: boolean = false) => (
+    <div
+      key={u.id}
+      className="flex items-center justify-between gap-3"
+    >
+      {/* LEFT SIDE */}
+      <div className="flex items-center gap-3">
+        <img
+          src={getAvatarUrl(u.avatar_url)}
+          className="w-8 h-8 rounded-full object-cover"
+          alt={u.username}
+        />
+        <p className="text-sm font-medium">{u.username}</p>
+      </div>
+
+      {/* RIGHT SIDE (ONLY FOLLOWING TAB) */}
+      {showUnfollow && user && (
+        <UnfollowButton
+          userId={user.id}
+          targetId={u.id}
+        />
+      )}
     </div>
   );
 
@@ -133,7 +152,10 @@ export default function Profile() {
 
       {/* MODAL */}
       {editOpen && (
-        <EditProfileModal user={user} onClose={() => setEditOpen(false)} />
+        <EditProfileModal
+          user={user}
+          onClose={() => setEditOpen(false)}
+        />
       )}
 
       {/* FOLLOW TABS */}
@@ -147,7 +169,7 @@ export default function Profile() {
                 You don’t have any followers yet.
               </p>
             ) : (
-              followers.map(renderUser)
+              followers.map((u) => renderUser(u, false))
             )}
           </div>
         }
@@ -158,7 +180,7 @@ export default function Profile() {
                 You are not following anyone yet.
               </p>
             ) : (
-              following.map(renderUser)
+              following.map((u) => renderUser(u, true))
             )}
           </div>
         }
