@@ -99,6 +99,53 @@ class FollowService {
       },
     });
   }
+
+// ======================
+// FOLLOW SUGGESTIONS
+// ======================
+async getSuggestions(user_id: number) {
+
+  // 1. Get users the current user already follows
+  const following = await prisma.follow.findMany({
+    where: { follower_id: user_id },
+    select: { following_id: true },
+  });
+
+  const followingIds = following.map(f => f.following_id);
+
+  // 2. Find candidate users (not me + not already followed)
+  const users = await prisma.user.findMany({
+    where: {
+      id: {
+        notIn: [...followingIds, user_id],
+      },
+    },
+    select: {
+      id: true,
+      username: true,
+      avatar_url: true,
+      bio: true,
+      _count: {
+        select: {
+          followers: true, // popularity
+        },
+      },
+    },
+    take: 10,
+  });
+
+  // 3. Sort by popularity
+  const ranked = users.sort(
+    (a, b) => b._count.followers - a._count.followers
+  );
+
+  return ranked.map((u) => ({
+    id: u.id,
+    username: u.username,
+    avatar_url: u.avatar_url,
+    bio: u.bio,
+  }));
+}
 }
 
 export const followService = new FollowService();
