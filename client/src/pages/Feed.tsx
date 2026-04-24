@@ -5,9 +5,12 @@ import { Heart, MessageCircle } from "lucide-react";
 
 import api from "../services/api";
 import CreatePost from "../components/post/CreatePost";
+import DeletePost from "../components/post/DeletePost";
+import CommentModal from "../components/comment/CommentModal";
+
 import { FeedPost, FeedResponse } from "../types/feed.types";
 import { useState } from "react";
-import CommentModal from "../components/comment/CommentModal";
+import { authService } from "../services/auth.service";
 
 const fetchFeed = async (): Promise<FeedPost[]> => {
   const { data } = await api.get<FeedResponse>("/posts/feed");
@@ -16,6 +19,10 @@ const fetchFeed = async (): Promise<FeedPost[]> => {
 
 export default function Feed() {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useQuery({
+  queryKey: ["currentUser"],
+  queryFn: authService.getCurrentUser,
+});
 
   // ======================
   // COMMENT MODAL STATE
@@ -89,7 +96,7 @@ export default function Feed() {
                 liked_by_me: data.isLiked,
                 likes_count: data.likesCount,
               }
-            : post,
+            : post
         );
       });
     },
@@ -125,25 +132,36 @@ export default function Feed() {
             className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition"
           >
             {/* HEADER */}
-            <div className="flex items-center gap-3 mb-3">
-              <img
-                src={
-                  post.author.avatar_url
-                    ? post.author.avatar_url.startsWith("http")
-                      ? post.author.avatar_url
-                      : `http://localhost:3000${post.author.avatar_url}`
-                    : "https://via.placeholder.com/40"
-                }
-                className="w-10 h-10 rounded-full object-cover"
-                alt="avatar"
-              />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <img
+                  src={
+                    post.author.avatar_url
+                      ? post.author.avatar_url.startsWith("http")
+                        ? post.author.avatar_url
+                        : `http://localhost:3000${post.author.avatar_url}`
+                      : "https://via.placeholder.com/40"
+                  }
+                  className="w-10 h-10 rounded-full object-cover"
+                  alt="avatar"
+                />
 
-              <div>
-                <p className="font-semibold text-sm">{post.author.username}</p>
-                <p className="text-xs text-gray-400">
-                  {new Date(post.created_at).toLocaleString()}
-                </p>
+                <div>
+                  <p className="font-semibold text-sm">
+                    {post.author.username}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(post.created_at).toLocaleString()}
+                  </p>
+                </div>
               </div>
+
+              {/* DELETE BUTTON */}
+              <DeletePost
+                postId={post.id}
+                authorId={post.author.id}
+                currentUserId={currentUser?.id}
+              />
             </div>
 
             {/* CONTENT */}
