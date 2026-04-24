@@ -1,5 +1,8 @@
 // src/components/auth/RegisterForm.tsx
 import { useState } from "react";
+import { AxiosError } from "axios";
+import { authService } from "../../services/auth.service";
+import RegisterButton from "./RegisterButton";
 
 type FormData = {
   name: string;
@@ -7,6 +10,10 @@ type FormData = {
   email: string;
   password: string;
   confirmPassword: string;
+};
+
+type ApiErrorResponse = {
+  message: string;
 };
 
 export default function RegisterForm() {
@@ -18,22 +25,61 @@ export default function RegisterForm() {
     confirmPassword: "",
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     setError("");
+    setSuccess("");
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    console.log("Register data:", form);
+    try {
+      setLoading(true);
+
+      const payload = {
+        name: form.name,
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      };
+
+      await authService.register(payload);
+
+      setSuccess("Account created successfully!");
+
+      setForm({
+        name: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        const data = err.response?.data as ApiErrorResponse | undefined;
+        setError(data?.message || "Registration failed. Try again.");
+      } else {
+        setError("Something went wrong. Try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +87,12 @@ export default function RegisterForm() {
       onSubmit={handleSubmit}
       className="space-y-4 bg-white p-6 rounded-xl shadow-md border border-purple-100"
     >
+      {/* Success message */}
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
+          {success}
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
@@ -49,68 +101,52 @@ export default function RegisterForm() {
         </div>
       )}
 
-      {/* Input group */}
+      {/* Inputs */}
       <div className="space-y-3">
-
         <input
-          type="text"
           name="name"
-          placeholder="Full Name"
           value={form.name}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md 
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+          placeholder="Full Name"
+          className="input"
         />
 
         <input
-          type="text"
           name="username"
-          placeholder="Username"
           value={form.username}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md 
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+          placeholder="Username"
+          className="input"
         />
 
         <input
-          type="email"
           name="email"
-          placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md 
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+          placeholder="Email"
+          className="input"
         />
 
         <input
-          type="password"
           name="password"
-          placeholder="Password"
+          type="password"
           value={form.password}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md 
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+          placeholder="Password"
+          className="input"
         />
 
         <input
-          type="password"
           name="confirmPassword"
-          placeholder="Confirm Password"
+          type="password"
           value={form.confirmPassword}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md 
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+          placeholder="Confirm Password"
+          className="input"
         />
       </div>
 
-      {/* Button */}
-      <button
-        type="submit"
-        className="w-full bg-purple-600 hover:bg-purple-700 active:scale-[0.99]
-                   text-white font-medium py-2.5 rounded-md transition"
-      >
-        Create Account
-      </button>
+      <RegisterButton loading={loading} />
     </form>
   );
 }
