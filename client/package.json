@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.99.2",
+    "@tanstack/react-router": "^1.168.23",
     "axios": "^1.15.1",
     "browser-image-compression": "^2.0.2",
     "dotenv": "^17.4.2",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@tanstack/router-plugin": "^1.167.23",
     "@types/dotenv": "^6.1.1",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
