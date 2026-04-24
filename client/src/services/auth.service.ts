@@ -1,31 +1,47 @@
 import { AuthResponse, LoginInput, RegisterInput } from "../types/auth.types";
 import api from "./api";
 
-
-export const authService = {
-  // POST /register
-  register: async (userData: RegisterInput): Promise<AuthResponse> => {
+class AuthService {
+  /**
+   * POST /register
+   */
+  async register(userData: RegisterInput): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>("/auth/register", userData);
-    if (data.token) localStorage.setItem("token", data.token);
+
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
     return data;
-  },
+  }
 
-  // POST /login
-  login: async (credentials: LoginInput) => {
-    const { data } = await api.post("/auth/login", credentials);
-    // Your controller sends token at the root of the response object
-    if (data.token) localStorage.setItem("token", data.token);
-    return data; // contains data.data (the user) and data.token
-  },
+  /**
+   * POST /login
+   */
+  async login(credentials: LoginInput): Promise<AuthResponse> {
+    const { data } = await api.post<AuthResponse>("/auth/login", credentials);
 
-  // GET /me
-  getCurrentUser: async () => {
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
+    return data;
+  }
+
+  /**
+   * GET /auth/me
+   */
+  async getCurrentUser() {
     const { data } = await api.get("/auth/me");
     return data.data;
-  },
+  }
 
-  // Logout
-  logout: (): void => {
+  /**
+   * Logout user
+   */
+  logout(): void {
     localStorage.removeItem("token");
-  },
-};
+  }
+}
+
+export const authService = new AuthService();
