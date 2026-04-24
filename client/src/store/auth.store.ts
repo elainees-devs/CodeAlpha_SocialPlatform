@@ -29,23 +29,19 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
         }),
 
-      logout: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        }),
+      logout: () => {
+        localStorage.removeItem("token");
+        set({ user: null, token: null });
+      },
 
-      setHydrated: () =>
-        set({ hydrated: true }),
+      setHydrated: () => set({ hydrated: true }),
     }),
     {
       name: "auth-storage",
 
-    
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
       },
-    }
-  )
+    },
+  ),
 );
