@@ -1,15 +1,10 @@
 // src/components/comment/CommentModal.tsx
 import { useState } from "react";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import {
-  getCommentsByPost,
-  createComment,
-  Comment,
-} from "../../services/comment.service";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { commentService, Comment } from "../../services/comment.service";
+import DeleteComment from "./DeleteCommentButton";
+import { authService } from "../../services/auth.service";
 
 // ======================
 // TYPES
@@ -28,29 +23,30 @@ export default function CommentModal({
   const queryClient = useQueryClient();
   const [content, setContent] = useState<string>("");
 
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: authService.getCurrentUser,
+  });
+
   // ======================
-  // FETCH COMMENTS (FIXED)
+  // FETCH COMMENTS
   // ======================
-  const {
-    data: comments = [],
-    isLoading,
-  } = useQuery<Comment[]>({
+  const { data: comments = [], isLoading } = useQuery<Comment[]>({
     queryKey: ["comments", postId],
-    queryFn: () => getCommentsByPost(postId as number),
+    queryFn: () => commentService.getCommentsByPost(postId as number),
     enabled: isOpen && !!postId,
   });
 
   // ======================
-  // ADD COMMENT (FIXED)
+  // ADD COMMENT
   // ======================
   const mutation = useMutation({
     mutationFn: () =>
-      createComment(postId as number, content),
+      commentService.createComment(postId as number, content),
 
     onSuccess: (newComment: Comment) => {
       setContent("");
 
-      // optimistic cache update
       queryClient.setQueryData<Comment[]>(
         ["comments", postId],
         (old) => {
@@ -59,7 +55,6 @@ export default function CommentModal({
         }
       );
 
-      // update feed (comment count)
       queryClient.invalidateQueries({
         queryKey: ["feed"],
       });
@@ -85,13 +80,26 @@ export default function CommentModal({
           )}
 
           {comments.map((c) => (
-            <div key={c.id} className="text-sm border-b pb-2">
-              <p className="font-semibold">
-                {c.author.username}
-              </p>
-              <p className="text-gray-700">
-                {c.content}
-              </p>
+            <div
+              key={c.id}
+              className="text-sm border-b pb-2 flex justify-between gap-2"
+            >
+              <div>
+                <p className="font-semibold">
+                  {c.author.username}
+                </p>
+                <p className="text-gray-700">
+                  {c.content}
+                </p>
+              </div>
+
+              {/* DELETE COMMENT (ONLY OWNER) */}
+              <DeleteComment
+                commentId={c.id}
+                authorId={c.author.id}
+                currentUserId={currentUser?.id}
+                postId={postId}
+              />
             </div>
           ))}
         </div>
@@ -107,14 +115,10 @@ export default function CommentModal({
 
           <button
             onClick={() => mutation.mutate()}
-            disabled={
-              !content.trim() || mutation.isPending
-            }
+            disabled={!content.trim() || mutation.isPending}
             className="bg-purple-600 text-white px-3 rounded disabled:opacity-50"
           >
-            {mutation.isPending
-              ? "Posting..."
-              : "Post"}
+            {mutation.isPending ? "Posting..." : "Post"}
           </button>
         </div>
       </div>
