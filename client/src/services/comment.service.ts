@@ -15,43 +15,52 @@ export type Comment = {
   };
 };
 
-// ======================
-// GET COMMENTS FOR POST
-// ======================
-export const getCommentsByPost = async (
-  postId: number
-): Promise<Comment[]> => {
-  const { data } = await api.get(
-    `/comments/post/${postId}`
-  );
-
-  return data.data;
+type ApiResponse<T> = {
+  success: boolean;
+  data: T;
 };
 
 // ======================
-// CREATE COMMENT
+// COMMENT SERVICE CLASS
 // ======================
-export const createComment = async (
-  postId: number,
-  content: string
-): Promise<Comment> => {
-  const { data } = await api.post("/comments", {
-    postId,
-    content,
-  });
+class CommentService {
+  /**
+   * Get comments for a post
+   */
+  async getCommentsByPost(postId: number): Promise<Comment[]> {
+    const { data } = await api.get<ApiResponse<Comment[]>>(
+      `/comments/post/${postId}`
+    );
 
-  return data.data;
-};
+    return data.data;
+  }
 
-// ======================
-// DELETE COMMENT
-// ======================
-export const deleteComment = async (
-  commentId: number
-): Promise<{ success: boolean }> => {
-  const { data } = await api.delete(
-    `/comments/${commentId}`
-  );
+  /**
+   * Create a comment
+   */
+  async createComment(
+    postId: number,
+    content: string
+  ): Promise<Comment> {
+    const { data } = await api.post<ApiResponse<Comment>>(
+      "/comments",
+      {
+        postId,
+        content,
+      }
+    );
 
-  return data;
-};
+    return data.data;
+  }
+
+  /**
+   * Delete a comment (only owner)
+   */
+  async deleteComment(commentId: number): Promise<void> {
+    await api.delete<ApiResponse<null>>(
+      `/comments/${commentId}`
+    );
+  }
+}
+
+export const commentService = new CommentService();
