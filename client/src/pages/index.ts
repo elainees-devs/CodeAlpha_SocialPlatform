@@ -1,6 +1,5 @@
-export { default as NotFound } from "./NotFound";
-export { default as Register } from "./auth/Register";
-export { default as Home } from "./Home";
-export { default as Login } from "./auth/Login";
-export { default as Feed } from "./Feed";
-export { default as Profile } from "./Profile";
+export { default as Register } from "../pages/auth/Register";
+export { default as Home } from "../pages/Home";
+export { default as Login } from "../pages/auth/Login";
+export { default as Feed } from "../pages/Feed";
+export { default as Profile } from "../pages/Profile";
