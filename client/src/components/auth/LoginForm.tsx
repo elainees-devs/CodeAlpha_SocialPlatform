@@ -47,10 +47,10 @@ export default function LoginForm() {
 
       console.log("Login successful:", response);
 
-      // 🔥 SAVE AUTH STATE (IMPORTANT)
-      loginStore(response.data.user, response.token);
+      //SAVE AUTH STATE 
+      loginStore(response.user, response.token);
 
-      // 🔥 Redirect to Feed page
+      //Redirect to Feed page
       navigate("/feed");
 
     } catch (err) {
