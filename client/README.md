@@ -1,4 +1,4 @@
-# SocialPlatform Frontend
+# Social Connect Platform Frontend
 
 A modern, high-performance social media frontend application built with **React**, **TypeScript**, and **TanStack**. This project features a robust architecture designed for scalability, featuring file-based routing, efficient server-state management, and a clean, responsive UI.
 
